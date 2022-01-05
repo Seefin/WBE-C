@@ -5,4 +5,4 @@ main.o:
 browser.o:
 	gcc -std=c99 -Wall -o browser.o -c browser.c
 clean:
-	rm *.o *.h~ *.c~ browser
+	rm *.o .*~ *~ .*.*un* browser

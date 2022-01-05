@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 {
 	int opt;
 	opterr = 0;
-	options_t options = { 0, 0, ""};
+	options_t options = { 0, 0, "" };
 
 	while ((opt = getopt(argc, argv, OPTSTR)) != EOF)
 	{
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
-	if ( printStruct(options) != EXIT_SUCCESS)
+	if ( options.verbose >= VERBOSE_OUT && printStruct(options) != EXIT_SUCCESS)
 	{
 		perror("CANNOT PRINT OPTIONS STRUCT");
 		exit(EXIT_FAILURE);

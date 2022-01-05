@@ -32,8 +32,10 @@
 #include <getopt.h>
 
 #define OPTSTR "vu:sh"
-#define USAGE_FMT  "%s [-v] [-u URI] [-s] [-h]"
+#define USAGE_FMT  "%s [-v] [-u URI] [-s] [-h]\n"
 #define DEFAULT_PROGNAME "TextBrowser"
+#define VERBOSE_OUT 1
+#define DEBUG_OUT 2
 
 extern int errno;
 extern char *optarg;

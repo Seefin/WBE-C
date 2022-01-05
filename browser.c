@@ -23,7 +23,7 @@
 
 int start(char *uri)
 {
-	assert strncmp("http://",uri,strlen("http://")) == 0;
+	assert(strncmp("http://",uri,strlen("http://")) == 0);
 	return BSUCCESS;
 }
 
