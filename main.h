@@ -42,7 +42,7 @@ extern int opterr, optind;
 typedef struct {
 	int verbose;
 	int ssl;
-	char *uri[];
+	char *uri;
 } options_t;
 
 void usage(char *progname);

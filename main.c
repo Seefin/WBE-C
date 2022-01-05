@@ -25,6 +25,7 @@
  */
 
 #include "main.h"
+#include "browser.h"
 
 void usage(char *progname)
 {
@@ -34,13 +35,14 @@ void usage(char *progname)
 
 int printStruct(options_t opt)
 {
-	fprintf(stdout,"verbose: %d\nssl:     %d\nuri:     %s\n",options.verbose, options.ssl, options.uri);
+	fprintf(stdout,"verbose: %d\nssl:     %d\nuri:     %s\n",opt.verbose, opt.ssl, opt.uri);
 	return EXIT_SUCCESS;
 }
 
 int main(int argc, char *argv[])
 {
-	opt_err = 0;
+	int opt;
+	opterr = 0;
 	options_t options = { 0, 0, ""};
 
 	while ((opt = getopt(argc, argv, OPTSTR)) != EOF)
@@ -59,13 +61,19 @@ int main(int argc, char *argv[])
 				break;
 			case 'h':
 			default:
-				usage(basename(argv[0]);
+				usage(basename(argv[0]));
 				break;
 		}
 	}
 	if ( printStruct(options) != EXIT_SUCCESS)
 	{
 		perror("CANNOT PRINT OPTIONS STRUCT");
+		exit(EXIT_FAILURE);
+	}
+	if ( start(options.uri) != BSUCCESS )
+	{
+		perror("CANNOT START BROWSER WITH OPTIONS STRUCT:\n");
+		printStruct(options);
 		exit(EXIT_FAILURE);
 	}
 	exit(EXIT_SUCCESS);
