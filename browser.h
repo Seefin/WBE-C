@@ -24,8 +24,10 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-int start(char *uri);
+int start(char *uri, int ssl, int verbose);
 
 /*
 *****

@@ -35,7 +35,7 @@ void usage(char *progname)
 
 int printStruct(options_t opt)
 {
-	fprintf(stdout,"verbose: %d\nssl:     %d\nuri:     %s\n",opt.verbose, opt.ssl, opt.uri);
+	fprintf(stdout,"verbose:    \t%d\nssl:       \t%d\nuri:        \t%s\n",opt.verbose, opt.ssl, opt.uri);
 	return EXIT_SUCCESS;
 }
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 		perror("CANNOT PRINT OPTIONS STRUCT");
 		exit(EXIT_FAILURE);
 	}
-	if ( start(options.uri) != BSUCCESS )
+	if ( start(options.uri, options.ssl, options.verbose) != BSUCCESS )
 	{
 		perror("CANNOT START BROWSER WITH OPTIONS STRUCT:\n");
 		printStruct(options);
