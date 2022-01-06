@@ -63,16 +63,13 @@ int start(char *uri, int ssl, int verbose)
 		return BFAILURE;
 	}
 	
-	/*Add the // back to the protocol */
-	if ( realloc(protocol, strlen(protocol) + 3) )
-	{
-		protocol = strcat(protocol, "//");
-	}
-	else
+	/*remove the : from the protocol */
+	if ( ! realloc(protocol, strlen(protocol) - 1) )
 	{
 		perror("realloc of Protocol failed");
 		return BFAILURE;
 	}
+	protocol[strlen(protocol) - 1 ] = '\0';
 
 	/* Verbose/debug */
 	if ( verbose >= 1 )
@@ -83,7 +80,7 @@ int start(char *uri, int ssl, int verbose)
 	}
 
 	/* pass to get page */
-	char *page = getPage(host, protocol, path);
+	char *page = getPage(host, path);
 	printf("%s\n",page);
 	/* Default succeed */
 	free(path);
@@ -91,7 +88,7 @@ int start(char *uri, int ssl, int verbose)
 	return BSUCCESS;
 }
 
-char * getPage(char *host, char *protocol, char *path)
+char * getPage(char *host, char *path)
 {
 	char *str = calloc(2000, sizeof(char));
 
@@ -101,7 +98,12 @@ char * getPage(char *host, char *protocol, char *path)
 	hints.ai_socktype = SOCK_STREAM;
 
 	struct addrinfo *servinfo;
-	int status = getaddrinfo(host,"http", &hints, &servinfo);
+	/* Always use 'http' for protocol - SSL comes later, lads */
+	if( getaddrinfo(host,"http",&hints, &servinfo) != 0 )
+	{
+		fprintf(stderr,"getaddrinfo failure - this is normally a DNS thing");
+		exit(EXIT_FAILURE);
+	}
 
 	int sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
 	if( connect(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) < 0 )

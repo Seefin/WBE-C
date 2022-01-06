@@ -31,7 +31,7 @@
 #include <netdb.h>
 
 int start(char *uri, int ssl, int verbose);
-char * getPage(char *host, char *protocol, char *path);
+char * getPage(char *host, char *path);
 
 /*
 *****
