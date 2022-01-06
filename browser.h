@@ -27,7 +27,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sys/socket.h>
+#include <netdb.h>
+
 int start(char *uri, int ssl, int verbose);
+char * getPage(char *host, char *protocol, char *path);
 
 /*
 *****

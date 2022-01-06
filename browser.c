@@ -77,14 +77,66 @@ int start(char *uri, int ssl, int verbose)
 	/* Verbose/debug */
 	if ( verbose >= 1 )
 	{
-		printf("Protocol is:\t%s\n",protocol);
-		printf("Host is:    \t%s\n",host);
-		printf("Path is:     \t%s\n",path);
+		fprintf(stderr,"Protocol is:\t%s\n",protocol);
+		fprintf(stderr,"Host is:    \t%s\n",host);
+		fprintf(stderr,"Path is:     \t%s\n",path);
 	}
+
+	/* pass to get page */
+	char *page = getPage(host, protocol, path);
+	printf("%s\n",page);
 	/* Default succeed */
 	free(path);
 	free(protocol);
 	return BSUCCESS;
+}
+
+char * getPage(char *host, char *protocol, char *path)
+{
+	char *str = calloc(2000, sizeof(char));
+
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	struct addrinfo *servinfo;
+	int status = getaddrinfo(host,"http", &hints, &servinfo);
+
+	int sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+	if( connect(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) < 0 )
+	{
+		fprintf(stderr,"Connection to host '%s' failed!\n", host);
+		exit(EXIT_FAILURE);
+	}
+
+	char *message = calloc(1000, sizeof(char));
+        strcat(message,"GET /index.html HTTP/1.0\r\nHost: ");
+	strcat(message, host);
+	strcat(message, "\r\n\r\n");
+	int message_length = strlen(message) + 1;
+	realloc(message,message_length);
+	if( send(sockfd, message, strlen(message), 0) < 0 )
+	{
+		fprintf(stderr, "Sending message '%s' to host '%s' failed.\n", message, host);
+		exit(EXIT_FAILURE);
+	}
+	char *reply = calloc(4000, sizeof(char));
+	if( recv(sockfd, reply, 2000, 0) < 0 )
+	{
+		fprintf(stderr,"Could not call recv() on server reply\n");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		int str_length = strlen(reply) + 1;
+		str = strdup(reply);
+		realloc(str, str_length);
+	}
+
+	freeaddrinfo(servinfo);
+	free(message);
+	return str;
 }
 
 /*
