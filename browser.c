@@ -113,11 +113,17 @@ char * getPage(char *host, char *path)
 	}
 
 	char *message = calloc(1000, sizeof(char));
-        strcat(message,"GET /index.html HTTP/1.0\r\nHost: ");
+	strcat(message,"GET ");
+	strcat(message, path);
+        strcat(message," HTTP/1.0\r\nHost: ");
 	strcat(message, host);
 	strcat(message, "\r\n\r\n");
 	int message_length = strlen(message) + 1;
-	realloc(message,message_length);
+	if( ! realloc(message,message_length) )
+	{
+		fprintf(stderr,"Memory error - cannot realloc message buffer");
+		exit(EXIT_FAILURE);
+	}
 	if( send(sockfd, message, strlen(message), 0) < 0 )
 	{
 		fprintf(stderr, "Sending message '%s' to host '%s' failed.\n", message, host);
@@ -133,7 +139,11 @@ char * getPage(char *host, char *path)
 	{
 		int str_length = strlen(reply) + 1;
 		str = strdup(reply);
-		realloc(str, str_length);
+		if( ! realloc(str, str_length) )
+		{
+			fprintf(stderr,"Memory error - cannot realloc reply buffer");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	freeaddrinfo(servinfo);
