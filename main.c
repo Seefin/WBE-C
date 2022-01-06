@@ -35,7 +35,7 @@ void usage(char *progname)
 
 int printStruct(options_t opt)
 {
-	fprintf(stdout,"verbose:    \t%d\nssl:       \t%d\nuri:        \t%s\n",opt.verbose, opt.ssl, opt.uri);
+	fprintf(stderr,"verbose:    \t%d\nssl:       \t%d\nuri:        \t%s\n",opt.verbose, opt.ssl, opt.uri);
 	return EXIT_SUCCESS;
 }
 
