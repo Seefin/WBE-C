@@ -7,4 +7,7 @@ main.o: main.c main.h
 browser.o: browser.c browser.h
 	gcc $(CFLAGS) -o browser.o browser.c
 clean:
-	rm *.o .*~ *~ .*.*un* browser
+	rm *.o .*~ *~ .*.*un* browser test
+test: test.c browser.h
+	gcc $(CFLAGS) -o test.o test.c
+	gcc test.o -o test
