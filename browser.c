@@ -94,7 +94,7 @@ int start(char *uri, int ssl, int verbose)
 
 char * getPage(char *host, char *path)
 {
-	char *str = calloc(2000, sizeof(char));
+	char *str = calloc(BUFSIZE, sizeof(char));
 
 	/* Construct hints for servifo struct generation */
 	struct addrinfo hints;
@@ -111,6 +111,7 @@ char * getPage(char *host, char *path)
 	assert( connect(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) >= 0, "Connection to host %s failed!\n", host );
 
 	/* Create and send simple GET request to server */
+	char *message = calloc(BUFSIZE, sizeof(char));
 	strcat(message,"GET ");
 	strcat(message, path);
 	strcat(message," HTTP/1.0\r\nHost: ");
@@ -122,6 +123,7 @@ char * getPage(char *host, char *path)
 	assert(send(sockfd, message, strlen(message), 0) >= 0, "Sending Error - cannot send message:\n%s\nto host: %s\n",message,host);
 
 	/* Recieve and read reply from the server */
+	char *reply = calloc(BUFSIZE, sizeof(char));
 	assert(recv(sockfd, reply, BUFSIZE, 0) >= 0, "Receiving Error - cannot call recv() on reply from %s\n", host);
 	int str_length = strlen(reply) + 1;
 	str = strdup(reply);

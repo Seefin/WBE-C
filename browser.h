@@ -21,6 +21,7 @@
 
 #define BFAILURE 1
 #define BSUCCESS 0
+#define BUFSIZE 4000
 
 #include <string.h>
 #include <stdio.h>
