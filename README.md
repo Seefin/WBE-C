@@ -10,3 +10,15 @@ Of course, I am not anticipating that the toy implementation I create will be re
 
 Unless otherwise noted, this is a straight port of the Python code in https://github.com/browserengineering/book to C, and 
 this has been done by me.
+
+## Usage
+To install and use the 'browser', do the following:
+
+```
+make clean
+make
+./browser -u http://www.example.com 
+```
+
+SSL support can be configured via the -s flag, and verbose mode via the -v flag. Any other options will print a help message
+and then exit.
