@@ -56,8 +56,8 @@ char * getPage(char *host, char *path);
 #ifdef assert
 #undef assert
 #endif
+#define assert(condition,format,...) if( ! (condition) ){ fprintf(stderr,format __VA_OPT__(,) __VA_ARGS__); abort(); }
 
-#define assert(condition,format,...) if( ! condition ){ fprintf(stderr,format __VA_OPT__(,) __VA_ARGS__); abort(); }
 
 /*
 *****

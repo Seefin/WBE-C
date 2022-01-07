@@ -43,6 +43,8 @@ int start(char *uri, int ssl, int verbose)
 	 */
 	char *host, *path, *protocol, *token;
 	char *rest = strdup(uri);
+	assert( realloc(protocol, strlen(protocol) - 1),"Could not realloc protocol buffer!\n"); 
+	protocol[strlen(protocol) - 1 ] = '\0';
 
 	token = strtok_r(rest, "/", &rest);
 	protocol = calloc( strlen(token) + 3, sizeof(char) );
@@ -53,23 +55,10 @@ int start(char *uri, int ssl, int verbose)
 	 */
 	path = malloc(sizeof(char));
 	path[0] = '/';
-	if ( realloc(path, strlen(rest) + 1) )
-	{
-		path = strcat(path,rest);
-	}
-	else
-	{
-		perror("realloc of Path failed");
-		return BFAILURE;
-	}
-	
-	/*remove the : from the protocol */
-	if ( ! realloc(protocol, strlen(protocol) - 1) )
-	{
-		perror("realloc of Protocol failed");
-		return BFAILURE;
-	}
-	protocol[strlen(protocol) - 1 ] = '\0';
+	/* Fix for 0 length path */
+	int new_path_size = strlen(tokens[2] + 1) > 1 ? strlen(tokens[2] + 1) : 2;
+	assert( realloc(path, new_path_size),"Could not realloc path buffer!\n");
+	path = strcat(path,tokens[2]);
 
 	/* Verbose/debug */
 	if ( verbose >= 1 )
@@ -81,24 +70,22 @@ int start(char *uri, int ssl, int verbose)
 		fprintf(stderr,"Path is:     \t%s\n",path);
 	}
 
-	/* pass to get page */
+	/* Make connection to server, fetch base page */
 	char *page = getPage(host, path);
 	/* Read the status - if not 200, fail and say why */
-	char *line, *version, *status, *explanation;
-	rest = strdup(page);
-	line = strtok(rest, "\r\n");
-	version = strtok_r(line, " ", &line);
-	status = strtok_r(line, " ", &line);
-	/* The rest of the line is an explanatory message if status is NOT 200 */
-	explanation = line;
-	assert( (strstr(status,"200") != NULL), "%s: %s\n", status, explanation);
-	printf("%s\n",page);
+	assert( realloc(tokens,3 * sizeof(char *)), "Could not realloc() tokens buffer!\n" );
 	if ( verbose >= 1 )
 	{
 		fprintf(stderr,"version:   \t%s\n", version);
 		fprintf(stderr,"status:    \t%s\n", status);
 		fprintf(stderr,"explanation:\t%s\n", explanation);
 	}
+
+	assert( (strstr(status,"200") != NULL), "%s: %s\n", status, explanation);
+
+	/*finally, show the page */
+	printf("%s\n",page);
+
 	/* Default succeed */
 	free(path);
 	free(protocol);
@@ -109,65 +96,43 @@ char * getPage(char *host, char *path)
 {
 	char *str = calloc(2000, sizeof(char));
 
+	/* Construct hints for servifo struct generation */
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
+	/*Create servinfo struct. Use hardcoded value "http" here for now */
 	struct addrinfo *servinfo;
-	/* Always use 'http' for protocol - SSL comes later, lads */
-	if( getaddrinfo(host,"http",&hints, &servinfo) != 0 )
-	{
-		fprintf(stderr,"getaddrinfo failure - this is normally a DNS thing");
-		exit(EXIT_FAILURE);
-	}
+	assert( getaddrinfo(host, "http", &hints, &servinfo) == 0, "getaddrinfo error - this is normally a DNS issue\n" );
 
+	/* Create socket to connect to our destiantion, and connect it */
 	int sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
-	if( connect(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) < 0 )
-	{
-		fprintf(stderr,"Connection to host '%s' failed!\n", host);
-		exit(EXIT_FAILURE);
-	}
+	assert( connect(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) >= 0, "Connection to host %s failed!\n", host );
 
-	char *message = calloc(1000, sizeof(char));
+	/* Create and send simple GET request to server */
 	strcat(message,"GET ");
 	strcat(message, path);
-        strcat(message," HTTP/1.0\r\nHost: ");
+	strcat(message," HTTP/1.0\r\nHost: ");
 	strcat(message, host);
 	strcat(message, "\r\n\r\n");
 	int message_length = strlen(message) + 1;
-	if( ! realloc(message,message_length) )
-	{
-		fprintf(stderr,"Memory error - cannot realloc message buffer");
-		exit(EXIT_FAILURE);
-	}
-	if( send(sockfd, message, strlen(message), 0) < 0 )
-	{
-		fprintf(stderr, "Sending message '%s' to host '%s' failed.\n", message, host);
-		exit(EXIT_FAILURE);
-	}
-	char *reply = calloc(4000, sizeof(char));
-	if( recv(sockfd, reply, 2000, 0) < 0 )
-	{
-		fprintf(stderr,"Could not call recv() on server reply\n");
-		exit(EXIT_FAILURE);
-	}
-	else
-	{
-		int str_length = strlen(reply) + 1;
-		str = strdup(reply);
-		if( ! realloc(str, str_length) )
-		{
-			fprintf(stderr,"Memory error - cannot realloc reply buffer");
-			exit(EXIT_FAILURE);
-		}
-	}
+	/* Don't send 1000 '\0' bytes to the server */
+	assert(realloc(message, message_length), "Memory Error - cannot realloc message buffer\n");
+	assert(send(sockfd, message, strlen(message), 0) >= 0, "Sending Error - cannot send message:\n%s\nto host: %s\n",message,host);
 
+	/* Recieve and read reply from the server */
+	assert(recv(sockfd, reply, BUFSIZE, 0) >= 0, "Receiving Error - cannot call recv() on reply from %s\n", host);
+	int str_length = strlen(reply) + 1;
+	str = strdup(reply);
+	assert(realloc(str, str_length),"Memory Error - cannot realloc reply buffer");
+
+	/* Free memory and return response */
 	freeaddrinfo(servinfo);
 	free(message);
 	return str;
 }
 
 /*
-*****
-*/
+ *****
+ */
