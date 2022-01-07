@@ -63,8 +63,40 @@ char * getPage(char *host, char *path);
  * Takes a list of tokens, and splits them using a delimiter, and then returns them
  * in an array (passed into the function).
  *
- * This may be futile.
+ * INPUTS
+ *   char *string     - The string to tokenise (obviously)
+ *   char *delimiters - The delimiters to use (multiple can be used, see strtok())
+ *   int n            - The number of splits to perform (0-based). The method will split the
+ *                      input string n times, and then the rest of the string is put into
+ *                      the final slot in the array. For example:
+ *
+ *                      ```
+ *                      char **tokens;
+ *                      char *string = "This is a string";
+ *                      tokens = malloc( 3 * sizeof( char * ) );
+ *                      StringTokens(string, " ", 2, tokens);
+ *                      ```
+ *
+ *                      gives the following results:
+ *
+ *                      ```
+ *                      tokens[0] = "This";
+ *                      tokens[1] = "is";
+ *                      tokens[2] = "a string";
+ *                      ```
+ *   char **tokens    - An array to store the results inside. This array should be big enough
+ *                      to contain n + 1 pointers. If it is not, there will be issues.
+ *
+ * OUTPUTS
+ *   None
+ *
+ * SIDE-EFFECTS
+ *   Modifies the passed in tokens buffer
+ *
+ * SEE ALSO
+ *   - man 3 strtok_r
  */
+
 void StringTokens(char *string, char *delimiters, int n, char **tokens)
 {
 	assert(strlen(string) > 0, "Provided string is 0 length!");
