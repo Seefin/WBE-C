@@ -59,6 +59,28 @@ char * getPage(char *host, char *path);
 #endif
 #define assert(condition,format,...) if( ! (condition) ){ fprintf(stderr,format __VA_OPT__(,) __VA_ARGS__); abort(); }
 
+/**Very Basic tokeniser
+ * Takes a list of tokens, and splits them using a delimiter, and then returns them
+ * in an array (passed into the function).
+ *
+ * This may be futile.
+ */
+void StringTokens(char *string, char *delimiters, int n, char **tokens)
+{
+	assert(strlen(string) > 0, "Provided string is 0 length!");
+	char *rest;
+	int i = 0;
+
+	rest = strdup(string);
+
+	/* Loop through input, and tokenise. */
+	for(i = 0; i < n; i++)
+	{
+		tokens[i] = strtok_r(rest, delimiters, &rest);
+	}
+	/* Place everything else into the final slot */
+	tokens[i] = rest;
+}
 
 /*
 *****

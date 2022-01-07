@@ -38,18 +38,22 @@ int start(char *uri, int ssl, int verbose)
 	 * This is a destructive operation over the URI variable, so the original 
 	 * contents are preserved in url if they are needed.
 	 *
-	 * TODO: Refactor this into something like:
-	 *   char * tokenize(const char *delim, char *tokens[])
 	 */
-	char *host, *path, *protocol, *token;
+	char *host, *path, *protocol;
+	char **tokens;
+
 	char *rest = strdup(uri);
+	tokens = malloc(3 * sizeof(char *));
+	StringTokens(rest, "/",2, tokens);
+
+	protocol = calloc( strlen(tokens[0]) + 3, sizeof(char) );
+	protocol = strdup(tokens[0]);
+	/*remove the : from the protocol */
 	assert( realloc(protocol, strlen(protocol) - 1),"Could not realloc protocol buffer!\n"); 
 	protocol[strlen(protocol) - 1 ] = '\0';
 
-	token = strtok_r(rest, "/", &rest);
-	protocol = calloc( strlen(token) + 3, sizeof(char) );
-	protocol = strdup(token);
-	host = strtok_r(rest, "/", &rest);
+	host = strdup(tokens[1]);
+
 	/* Prepend the path with '/' - this ensures we get the root page if
 	 * no path is given.
 	 */
@@ -72,8 +76,16 @@ int start(char *uri, int ssl, int verbose)
 
 	/* Make connection to server, fetch base page */
 	char *page = getPage(host, path);
+	rest = strdup(page); /* XXX: Copy response into a modifiable buffer to parse headers - may not require this */
+
 	/* Read the status - if not 200, fail and say why */
 	assert( realloc(tokens,3 * sizeof(char *)), "Could not realloc() tokens buffer!\n" );
+	char *statusline, *version, *status, *explanation;
+	statusline = strtok_r(rest, "\r\n", &rest);
+	StringTokens(statusline, " ", 2, tokens);
+	version = strdup(tokens[0]);
+	status = strdup(tokens[1]);
+	explanation = strdup(tokens[2]);
 	if ( verbose >= 1 )
 	{
 		fprintf(stderr,"version:   \t%s\n", version);
