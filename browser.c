@@ -30,7 +30,7 @@
  */
 int start(char *uri, int ssl, int verbose)
 {
-	assert( (strncmp("http://",uri,strlen("http://")) == 0) || (strncmp("https://", uri, strlen("https://")) == 0) );
+	assert( ((strncmp("http://",uri,strlen("http://")) == 0) || (strncmp("https://", uri, strlen("https://")) == 0)), "URI must start with http:// or https://\n" );
 
 	/**URI TOKENIZER
 	 * We use the strtok_r function to progressively chew through the string
@@ -42,7 +42,7 @@ int start(char *uri, int ssl, int verbose)
 	 *   char * tokenize(const char *delim, char *tokens[])
 	 */
 	char *host, *path, *protocol, *token;
-	char *rest = uri;
+	char *rest = strdup(uri);
 
 	token = strtok_r(rest, "/", &rest);
 	protocol = calloc( strlen(token) + 3, sizeof(char) );
@@ -74,6 +74,8 @@ int start(char *uri, int ssl, int verbose)
 	/* Verbose/debug */
 	if ( verbose >= 1 )
 	{
+		fprintf(stderr,"Rest is:    \t%s\n", rest);
+		fprintf(stderr,"URI is:     \t%s\n", uri);
 		fprintf(stderr,"Protocol is:\t%s\n",protocol);
 		fprintf(stderr,"Host is:    \t%s\n",host);
 		fprintf(stderr,"Path is:     \t%s\n",path);
@@ -81,7 +83,22 @@ int start(char *uri, int ssl, int verbose)
 
 	/* pass to get page */
 	char *page = getPage(host, path);
+	/* Read the status - if not 200, fail and say why */
+	char *line, *version, *status, *explanation;
+	rest = strdup(page);
+	line = strtok(rest, "\r\n");
+	version = strtok_r(line, " ", &line);
+	status = strtok_r(line, " ", &line);
+	/* The rest of the line is an explanatory message if status is NOT 200 */
+	explanation = line;
+	assert( (strstr(status,"200") != NULL), "%s: %s\n", status, explanation);
 	printf("%s\n",page);
+	if ( verbose >= 1 )
+	{
+		fprintf(stderr,"version:   \t%s\n", version);
+		fprintf(stderr,"status:    \t%s\n", status);
+		fprintf(stderr,"explanation:\t%s\n", explanation);
+	}
 	/* Default succeed */
 	free(path);
 	free(protocol);
