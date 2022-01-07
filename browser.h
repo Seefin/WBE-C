@@ -97,7 +97,7 @@ char * getPage(char *host, char *path);
  *   - man 3 strtok_r
  */
 
-void StringTokens(char *string, char *delimiters, int n, char **tokens)
+static inline void StringTokens(char *string, char *delimiters, int n, char **tokens)
 {
 	assert(strlen(string) > 0, "Provided string is 0 length!");
 	char *rest;
