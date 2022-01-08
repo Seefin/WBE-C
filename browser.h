@@ -33,6 +33,14 @@
 int start(char *uri, int ssl, int verbose);
 char * getPage(char *host, char *path);
 
+/**Headers
+ * Struct for HTTP headers
+ */
+typedef struct {
+	char *header;
+	char *value;
+} httpHeader;
+
 /**Assert replacement
  * The assert() macro from assert.h does not supply the ability to provide a custom error,
  * an causes the UX to be, well, unsatisfactory. This wrapper improves that functionality,

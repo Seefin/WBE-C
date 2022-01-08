@@ -67,10 +67,8 @@ int start(char *uri, int ssl, int verbose)
 	/* Verbose/debug */
 	if ( verbose >= 1 )
 	{
-		fprintf(stderr,"Rest is:    \t%s\n", rest);
-		fprintf(stderr,"URI is:     \t%s\n", uri);
-		fprintf(stderr,"Protocol is:\t%s\n",protocol);
-		fprintf(stderr,"Host is:    \t%s\n",host);
+		fprintf(stderr,"Protocol is: \t%s\n",protocol);
+		fprintf(stderr,"Host is:     \t%s\n",host);
 		fprintf(stderr,"Path is:     \t%s\n",path);
 	}
 
@@ -80,21 +78,32 @@ int start(char *uri, int ssl, int verbose)
 
 	/* Read the status - if not 200, fail and say why */
 	assert( realloc(tokens,3 * sizeof(char *)), "Could not realloc() tokens buffer!\n" );
-	char *statusline, *version, *status, *explanation;
-	statusline = strtok_r(rest, "\r\n", &rest);
-	StringTokens(statusline, " ", 2, tokens);
+	char *responseline, *version, *status, *explanation;
+	responseline = strtok_r(rest, "\r\n", &rest);
+	StringTokens(responseline, " ", 2, tokens);
 	version = strdup(tokens[0]);
 	status = strdup(tokens[1]);
 	explanation = strdup(tokens[2]);
 	if ( verbose >= 1 )
 	{
-		fprintf(stderr,"version:   \t%s\n", version);
-		fprintf(stderr,"status:    \t%s\n", status);
+		fprintf(stderr,"version:    \t%s\n", version);
+		fprintf(stderr,"status:     \t%s\n", status);
 		fprintf(stderr,"explanation:\t%s\n", explanation);
 	}
-
 	assert( (strstr(status,"200") != NULL), "%s: %s\n", status, explanation);
 
+	/* Store all the headers */
+	httpHeader *headers;
+	int headerCount = 0;
+	assert( headers = malloc( BUFSIZE * sizeof(httpHeader)), "Memory Error - cannot allocate memory for headers" );
+	responseline = strtok_r(rest, "\n", &rest);	
+	while( responseline != NULL && responseline[0] != '\r' )
+	{
+		/* Parse Headers - ends in \r\n, be sure to remove the '\r'! */
+		
+		/* Consume next line */
+		responseline = strtok_r(rest, "\n", &rest);
+	}
 	/*finally, show the page */
 	printf("%s\n",page);
 
