@@ -33,7 +33,7 @@
 #include <ctype.h>
 
 int start(char *uri, int ssl, int verbose);
-char * getPage(char *host, char *path);
+char * request(char *host, char *path);
 
 /**Headers
  * Struct for HTTP headers

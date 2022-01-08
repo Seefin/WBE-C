@@ -57,7 +57,7 @@ int start(char *uri, int ssl, int verbose)
 	/* Prepend the path with '/' - this ensures we get the root page if
 	 * no path is given.
 	 */
-	path = malloc(sizeof(char));
+	assert( (path = malloc(sizeof(char))) != NULL, "Memory Error - cannot allocate path memory");
 	path[0] = '/';
 	/* Fix for 0 length path */
 	int new_path_size = strlen(tokens[2] + 1) > 1 ? strlen(tokens[2] + 1) : 2;
@@ -73,7 +73,7 @@ int start(char *uri, int ssl, int verbose)
 	}
 
 	/* Make connection to server, fetch base page */
-	char *page = getPage(host, path);
+	char *page = request(host, path);
 	rest = strdup(page); /* XXX: Copy response into a modifiable buffer to parse headers - may not require this */
 
 	/* Read the status - if not 200, fail and say why */
@@ -111,16 +111,19 @@ int start(char *uri, int ssl, int verbose)
 		responseline = strtok_r(rest, "\n", &rest);
 		headerCount++;
 	}
+	assert( realloc(headers, headerCount * sizeof(httpHeader)), "Memory Error - cannot shrink headers buffer");
 	/*finally, show the page */
 	printf("%s\n",rest);
 
 	/* Default succeed */
 	free(path);
 	free(protocol);
+	free(headers);
+	free(tokens);
 	return BSUCCESS;
 }
 
-char * getPage(char *host, char *path)
+char * request(char *host, char *path)
 {
 	char *str = calloc(BUFSIZE, sizeof(char));
 
