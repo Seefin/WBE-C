@@ -100,12 +100,19 @@ int start(char *uri, int ssl, int verbose)
 	while( responseline != NULL && responseline[0] != '\r' )
 	{
 		/* Parse Headers - ends in \r\n, be sure to remove the '\r'! */
-		
+		assert( realloc(tokens, 2 * sizeof(char *)), "Memory Error - cannot allocate memory for header %d\n", headerCount );
+		StringTokens(responseline, ":", 1, tokens);
+		headers[headerCount].header = StringLower(strdup(tokens[0]));
+		headers[headerCount].value  = StringLower(strdup(tokens[1]));
+		/* Normalise values - make lowercase and strip leading whitespace */
+		headers[headerCount].value[strlen(headers[headerCount].value) - 1] = '\0';
+		headers[headerCount].value = headers[headerCount].value + 1;
 		/* Consume next line */
 		responseline = strtok_r(rest, "\n", &rest);
+		headerCount++;
 	}
 	/*finally, show the page */
-	printf("%s\n",page);
+	printf("%s\n",rest);
 
 	/* Default succeed */
 	free(path);
