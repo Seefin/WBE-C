@@ -30,6 +30,8 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+#include <ctype.h>
+
 int start(char *uri, int ssl, int verbose);
 char * getPage(char *host, char *path);
 
@@ -122,6 +124,42 @@ static inline void StringTokens(char *string, char *delimiters, int n, char **to
 	tokens[i] = rest;
 }
 
+/**Change Case
+ * Changes case of a string, rather than changing case of a character.
+ *
+ * INPUTS
+ *   char *string - String to change case of
+ *
+ * OUTPUTS
+ *   char * - Case changed version of string
+ */
+static inline char * StringLower(char *string)
+{
+	int i;
+	char *output;
+
+	output = strdup(string);
+
+	for( i = 0; i < strlen(output); i++)
+	{
+		output[i] = tolower((unsigned char) string[i]);
+	}
+	return output;
+}
+
+static inline char * StringUpper(char *string)
+{
+	int i;
+	char *output;
+
+	output = strdup(string);
+
+	for( i = 0; i < strlen(output); i++)
+	{
+		output[i] = toupper((unsigned char) string[i]);
+	}
+	return output;
+}
 /*
 *****
 */
