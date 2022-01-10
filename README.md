@@ -17,8 +17,9 @@ To install and use the 'browser', do the following:
 ```
 make clean
 make
-./browser -u http://www.example.com 
 ```
+
+The browser can be run by passing the URL to the 'browser' executable as an option (-u), or by itself (e.g. `./browser http://example.com/`).
 
 SSL support can be configured via the -s flag, and verbose mode via the -v flag. Any other options will print a help message
 and then exit.

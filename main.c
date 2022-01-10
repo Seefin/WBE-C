@@ -65,6 +65,10 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
+	if ( !strcmp(options.uri, "") && strcmp(argv[optind],"") )
+	{
+		options.uri = argv[optind];
+	}
 	if ( options.verbose >= VERBOSE_OUT && printStruct(options) != EXIT_SUCCESS)
 	{
 		perror("CANNOT PRINT OPTIONS STRUCT");
