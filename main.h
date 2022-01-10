@@ -32,7 +32,7 @@
 #include <getopt.h>
 
 #define OPTSTR "vu:sh"
-#define USAGE_FMT  "%s [-v] [-u URI] [-s] [-h]\n"
+#define USAGE_FMT  "%s [-v] [-u URI] [-s] [-h] <URI>\nURIs passed via -u will superceed those passed on their own"
 #define DEFAULT_PROGNAME "TextBrowser"
 #define VERBOSE_OUT 1
 #define DEBUG_OUT 2
