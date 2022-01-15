@@ -13,7 +13,7 @@
  * INPUTS
  *   start(options_t options) - the URL to fetch
  *
- * SEE ALSO 
+ * SEE ALSO
  *   browser/main.c
  *
  * SOURCE

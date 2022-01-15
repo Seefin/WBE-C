@@ -13,7 +13,7 @@
  * INPUTS
  *   start(options_t options) - Options struct containing URL to fetch
  *
- * SEE ALSO 
+ * SEE ALSO
  *   browser/main.c
  *
  * SOURCE
@@ -21,12 +21,12 @@
 
 #include "browser.h"
 
-/** Setup for browsing 
+/** Setup for browsing
  * Tokenises the URL into host, path and protocol, and then passes the information
  * to the getPage method to actually get the page.
  *
  * ASSERTIONS:
- *   uri starts with 'http://' or 'https://' 
+ *   uri starts with 'http://' or 'https://'
  */
 int start(char *uri, int ssl, int verbose)
 {
@@ -35,7 +35,7 @@ int start(char *uri, int ssl, int verbose)
 	/**URI TOKENIZER
 	 * We use the strtok_r function to progressively chew through the string
 	 * and assign the various tokens to the variable we want to use.
-	 * This is a destructive operation over the URI variable, so the original 
+	 * This is a destructive operation over the URI variable, so the original
 	 * contents are preserved in url if they are needed.
 	 *
 	 */
@@ -49,7 +49,7 @@ int start(char *uri, int ssl, int verbose)
 	protocol = calloc( strlen(tokens[0]) + 3, sizeof(char) );
 	protocol = strdup(tokens[0]);
 	/*remove the : from the protocol */
-	assert( realloc(protocol, strlen(protocol) - 1),"Could not realloc protocol buffer!\n"); 
+	assert( realloc(protocol, strlen(protocol) - 1),"Could not realloc protocol buffer!\n");
 	protocol[strlen(protocol) - 1 ] = '\0';
 
 	host = strdup(tokens[1]);
@@ -96,7 +96,7 @@ int start(char *uri, int ssl, int verbose)
 	httpHeader *headers;
 	int headerCount = 0;
 	assert( headers = malloc( BUFSIZE * sizeof(httpHeader)), "Memory Error - cannot allocate memory for headers" );
-	responseline = strtok_r(rest, "\n", &rest);	
+	responseline = strtok_r(rest, "\n", &rest);
 	while( responseline != NULL && responseline[0] != '\r' )
 	{
 		/* Parse Headers - ends in \r\n, be sure to remove the '\r'! */
