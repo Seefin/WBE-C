@@ -34,6 +34,7 @@
 
 int start(char *uri, int ssl, int verbose);
 char * request(char *host, char *path);
+void show(char *page);
 
 /**Headers
  * Struct for HTTP headers

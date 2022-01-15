@@ -113,7 +113,7 @@ int start(char *uri, int ssl, int verbose)
 	}
 	assert( realloc(headers, headerCount * sizeof(httpHeader)), "Memory Error - cannot shrink headers buffer");
 	/*finally, show the page */
-	printf("%s\n",rest);
+	show(rest);
 
 	/* Default succeed */
 	free(path);
@@ -164,6 +164,29 @@ char * request(char *host, char *path)
 	freeaddrinfo(servinfo);
 	free(message);
 	return str;
+}
+
+void show(char *page)
+{
+	int in_angle, length;
+	in_angle = 0;
+	length = strlen(page);
+	for (int i = 0; i <= length; i++)
+	{
+		if( page[i] == '<' )
+		{
+			in_angle = 1;
+		}
+		else if( page[i] == '>' )
+		{
+			in_angle = 0;
+		}
+		else if( ! in_angle )
+		{
+			printf("%c",page[i]);
+		}
+	}
+	printf("%s","\n");
 }
 
 /*
