@@ -21,7 +21,7 @@
 
 #define BFAILURE 1
 #define BSUCCESS 0
-#define BUFSIZE 4000
+#define BUFSIZE 1024
 
 #include <string.h>
 #include <stdio.h>
@@ -160,6 +160,28 @@ static inline char * StringUpper(char *string)
 		output[i] = toupper((unsigned char) string[i]);
 	}
 	return output;
+}
+/**Append Strings
+ * Handles appending strings to other strings, and ensures that the
+ * destination has enough space.
+ *
+ * INPUTS
+ *   const char *old - the string we want to append to
+ *   const char *new - the string to append
+ * OUTPUTS
+ *   char * - Appended string
+ */
+static inline char * AppendString(const char *old, const char *new_str)
+{
+	const size_t old_len = strlen(old), new_len = strlen(new_str);
+	const size_t out_len = old_len + new_len + 1;
+
+	char *out = malloc(out_len);
+
+	memcpy(out, old, old_len);
+	memcpy(out + old_len, new_str, new_len + 1);
+
+	return out;
 }
 /*
 *****

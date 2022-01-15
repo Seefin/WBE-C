@@ -125,8 +125,6 @@ int start(char *uri, int ssl, int verbose)
 
 char * request(char *host, char *path)
 {
-	char *str = calloc(BUFSIZE, sizeof(char));
-
 	/* Construct hints for servifo struct generation */
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof hints);
@@ -135,6 +133,7 @@ char * request(char *host, char *path)
 
 	/*Create servinfo struct. Use hardcoded value "http" here for now */
 	struct addrinfo *servinfo;
+	servinfo = NULL;
 	assert( getaddrinfo(host, "http", &hints, &servinfo) == 0, "getaddrinfo error - this is normally a DNS issue\n" );
 
 	/* Create socket to connect to our destiantion, and connect it */
@@ -154,11 +153,20 @@ char * request(char *host, char *path)
 	assert(send(sockfd, message, strlen(message), 0) >= 0, "Sending Error - cannot send message:\n%s\nto host: %s\n",message,host);
 
 	/* Recieve and read reply from the server */
-	char *reply = calloc(BUFSIZE, sizeof(char));
-	assert(recv(sockfd, reply, BUFSIZE, 0) >= 0, "Receiving Error - cannot call recv() on reply from %s\n", host);
-	int str_length = strlen(reply) + 1;
-	str = strdup(reply);
-	assert(realloc(str, str_length),"Memory Error - cannot realloc reply buffer");
+	char chunk[BUFSIZE], *str;
+	assert( (str=malloc(BUFSIZE * sizeof(char))) != NULL, "Memory Error - cannot allocate inital reply memory\n" );
+	int nbytes = 0;
+	while( 1 ){
+		/* Initalise download buffer */
+		memset(chunk, 0, BUFSIZE);
+		if( (nbytes = recv( sockfd, chunk, BUFSIZE, 0)) <= 0 )
+		{
+			break;
+		} else {
+			char *new_str = AppendString(str,chunk);
+			str = new_str;
+		}
+	}
 
 	/* Free memory and return response */
 	freeaddrinfo(servinfo);
