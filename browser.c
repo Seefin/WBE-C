@@ -153,24 +153,71 @@ char * request(char *host, char *path)
 	assert(send(sockfd, message, strlen(message), 0) >= 0, "Sending Error - cannot send message:\n%s\nto host: %s\n",message,host);
 
 	/* Recieve and read reply from the server */
+	char *str = recv_with_timeout(sockfd, NET_CONNECT_TIMEOUT_SECS);
+
+	/* Free memory and return response */
+	close(sockfd);
+	freeaddrinfo(servinfo);
+	free(message);
+	return str;
+}
+
+char * recv_with_timeout(int socket, int max_time)
+{
+	int size_recv, errno, total_size = 0;
+	struct timeval begin, now;
 	char chunk[BUFSIZE], *str;
-	assert( (str=malloc(BUFSIZE * sizeof(char))) != NULL, "Memory Error - cannot allocate inital reply memory\n" );
-	int nbytes = 0;
-	while( 1 ){
-		/* Initalise download buffer */
-		memset(chunk, 0, BUFSIZE);
-		if( (nbytes = recv( sockfd, chunk, BUFSIZE, 0)) <= 0 )
+	double timediff;
+
+	/* Allocate return string */
+	assert( (str=malloc(BUFSIZE)) != NULL, "Memory Error - cannot allocate inital reply memory\n" );
+	memset(str, 0, BUFSIZE);
+
+	/* Switch socket modes */
+	fcntl(socket, F_SETFL, O_NONBLOCK);
+
+	/*Record start time */
+	gettimeofday(&begin, NULL);
+
+	/* Loop until either:
+	 *  - All data recieved
+	 *  - Timeout reached, and some data recieved
+	 *  - 2 * timeout reached and no data recieved
+	 */
+	while( 1 )
+	{
+		/* Calculate elapsed time */
+		gettimeofday(&now, NULL);
+		timediff = (now.tv_sec - begin.tv_sec) + 1e-6 * (now.tv_usec - begin.tv_usec);
+		/* Break if timeout exceeded */
+		if( total_size > 0 && timediff > max_time)
 		{
 			break;
-		} else {
-			char *new_str = AppendString(str,chunk);
+		}
+		else if( timediff > (2 * max_time ))
+		{
+			break;
+		}
+		/* recv() data */
+		memset(chunk, 0, BUFSIZE);
+		/* If nothing recv()'d, wait */
+		size_recv = recv(socket, chunk, BUFSIZE, 0);
+		if( size_recv < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+		{
+			/*Still more to come */
+			usleep(100000);
+		}
+		else if( size_recv == 0 ){
+			/* Finished */
+			break;
+		}
+		else
+		{
+			total_size += size_recv;
+			char *new_str = AppendString(str, chunk);
 			str = new_str;
 		}
 	}
-
-	/* Free memory and return response */
-	freeaddrinfo(servinfo);
-	free(message);
 	return str;
 }
 

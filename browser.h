@@ -22,19 +22,33 @@
 #define BFAILURE 1
 #define BSUCCESS 0
 #define BUFSIZE 1024
+#define NET_CONNECT_TIMEOUT_SECS 5
 
+/*Basic libraries */
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <errno.h>
 
+/*Network Communications */
 #include <sys/socket.h>
 #include <netdb.h>
-
-#include <ctype.h>
+#include <unistd.h>
+#include <fcntl.h>
+/** OpenSSL **/
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
 
 int start(char *uri, int ssl, int verbose);
 char * request(char *host, char *path);
 void show(char *page);
+char * recv_with_timeout(int socket, int max_time);
 
 /**Headers
  * Struct for HTTP headers
