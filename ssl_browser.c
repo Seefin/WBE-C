@@ -8,8 +8,10 @@
 #include <openssl/crypto.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+
+const char *PREFERRED_CIPHERS = "HIGH:!aNULL:!kRSA:!SRP:!PSK:!CAMELLIA:!RC4:!MD5:!DSS";
 #ifndef assert
-#define assert(condition, format, ...) if( !(condition) ){fprintf(stderr,format __VA_OPT__(,) __VA_ARGS__); return EXIT_FAILURE; }
+#define ASSERT(x) { if( !(x) ){fprintf(stderr, "Assertion: %s, function: %s, line: %d\n", (char *)(__FILE__), (char *)(__func__), (int)(__LINE__)); raise(SIGTRAP); } }
 #endif
 
 char * recv_with_timeout(SSL *ssl, int timeout);
@@ -56,8 +58,73 @@ int main(int argc, char **argv)
 
 int request_ssl(char *host)
 {
-	SSL_CTX *ssl_ctx;
-	SSL *ssl;
+	long res = 1, ret = 1;
+	unsigned long ssl_err = 0;
+
+	SSL_CTX *ctx;
+	BIO *web = NULL, *out = NULL;
+	SSL *ssl = NULL;
+
+	/* Infinte loop that I'm not 100% sure we need... */
+	do {
+		/* This is cast to void, because the return value is meaningless - errors happen
+		 * once we start trying to create stuff if either of these functions fail - the functions 
+		 * themselves do not fail.
+		 */
+		(void)SSL_library_init();
+		SSL_load_error_strings();
+
+		/* Set our method up to use TLS, not SSL */
+		const SSL_METHOD *method = TLS_method();
+		ssl_err = ERR_get_error();
+		ASSERT( NULL != method );
+		if(!(NULL != method))
+		{
+			print_error_string(ssl_err, "TLS_method()");
+			break;
+		}
+		/* Create Context and set verify types */
+		ctx = SSL_CTX_new(method);
+		ssl_err = ERR_get_error();
+		ASSERT(NULL != ctx);
+		if(!(NULL != ctx))
+		{
+			print_error_string(ssl_err, "SSL_CTX_new()");
+			break;
+		}
+		SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
+		SSL_CTX_set_verify_depth(ctx, 100);
+		
+		/* Remove SSLv2 and SSLv3, and ensure TLS1.0 handshake used */
+		const unsigned long flags = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
+		unsigned long old_opts = SSL_CTX_set_options(ctx, flags);
+		UNUSED(old_opts);
+		
+		/* Set verify paths - where to find certificate chains to trust */
+		res = SSL_CTX_set_default_verify_paths(ctx);
+		ssl_err = ERR_get_error();
+		ASSERT( 1 == res );
+		if( !(1 == res) )
+		{
+			print_error_string(ssl_err, "SSL_CTX_set_default_verify_paths");
+			/* Non-fatal, but will cause failure elsewhere if fails */
+		}
+
+		/* Open BIOs */
+		web = BIO_new_ssl_connect(ctx);
+		ssl_err = ERR_get_error();
+		ASSERT( 1 == res );
+		if(!(1 == res))
+		{
+			print_error_string(ssl_err, "BIO_new_ssl_connect");
+			break;
+		}
+
+		/* Start connection */
+		res = BIO_set_conn_hostname(web, hostname ":443"); 
+
+
+	} while (0)
 	const SSL_METHOD *ssl_method;
 	X509 *server_cert;
 

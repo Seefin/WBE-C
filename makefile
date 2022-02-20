@@ -5,8 +5,8 @@ LDLIBS= -lssl -lcrypto
 
 all: main.o browser.o
 	gcc main.o browser.o -o browser
-ssl: simplessl.c
-	$(CC) $(CFLAGS) simplessl.c
+ssl: ssl_client.c
+	$(CC) $(CFLAGS) ssl_client.c
 main.o: main.c main.h
 	gcc $(CFLAGS) -o main.o main.c
 browser.o: browser.c browser.h
