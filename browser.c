@@ -214,6 +214,7 @@ char * recv_with_timeout(int socket, int max_time)
 		else
 		{
 			total_size += size_recv;
+			chunk[BUFSIZE] = '\0';
 			char *new_str = AppendString(str, chunk);
 			str = new_str;
 		}

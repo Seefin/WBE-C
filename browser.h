@@ -194,6 +194,7 @@ static inline char * AppendString(const char *old, const char *new_str)
 
 	memcpy(out, old, old_len);
 	memcpy(out + old_len, new_str, new_len + 1);
+	out[out_len] = '\0';
 
 	return out;
 }
